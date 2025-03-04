@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ウォレット認証</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.6.umd.min.js"></script>
+</head>
+<body>
+    <h2>Metamaskでウォレット認証</h2>
+    <button onclick="signMessage()">署名する</button>
+
+    <script>
+        async function signMessage() {
+            if (!window.ethereum) {
+                alert("Metamaskをインストールしてください！");
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user');
+            const nonce = urlParams.get('nonce');
+
+            if (!userId || !nonce) {
+                alert("認証エラー: 不正なリクエスト");
+                return;
+            }
+
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+
+                const signature = await signer.signMessage(nonce);
+
+                // Webhookサーバーへ署名結果を送信
+                await fetch("https://your-server.com/api/webhook", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, address, signature })
+                });
+
+                alert("認証完了！Discordを確認してください");
+            } catch (error) {
+                console.error("署名エラー:", error);
+                alert("署名に失敗しました。");
+            }
+        }
+    </script>
+</body>
+</html>
