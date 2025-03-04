@@ -6,11 +6,21 @@ function generateNonce() {
   return `Verify your wallet ownership: ${Math.floor(Math.random() * 1000000)}`;
 }
 
-function saveNonce(userId, nonce) {
+/*function saveNonce(userId, nonce) {
   nonceStore.set(userId, nonce);
 }
 
 function getNonce(userId) {
+  return nonceStore.get(userId);
+}*/
+
+function saveNonce(userId, nonce) {
+  console.log(`✅ nonce を保存: userId=${userId}, nonce=${nonce}`);
+  nonceStore.set(userId, nonce);
+}
+
+function getNonce(userId) {
+  console.log(`🔹 getNonce の呼び出し: userId=${userId}`);
   return nonceStore.get(userId);
 }
 
