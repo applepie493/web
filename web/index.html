@@ -51,21 +51,10 @@
                 const signature = await signer.signMessage(decodedNonce);
                 console.log("✅ 署名成功:", signature);
 
-                /*await fetch("https://web-gilt-nine.vercel.app/api/webhook", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ userId, address, signature })*/
                 await fetch("https://web-gilt-nine.vercel.app/api/webhook", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
-                    body: JSON.stringify({
-                        userId: userId.toString(),  // userId を文字列に変換
-                        address: address.toString(),
-                        signature: signature.toString()
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, address, signature })
                 });
 
                 alert("認証完了！Discordを確認してください");
