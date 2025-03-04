@@ -6,7 +6,7 @@ const { assignRole } = require('../services/roleService');
 const app = express();
 app.use(express.json());
 
-app.post('/api/webhook', async (req, res) => {
+/*app.post('/api/webhook', async (req, res) => {
     const { userId, address, signature } = req.body;
 
     // nonceを取得
@@ -29,8 +29,8 @@ app.post('/api/webhook', async (req, res) => {
     } else {
         return res.status(400).json({ error: 'NFTを確認できませんでした。' });
     }
-});
-/*app.post('/api/webhook', async (req, res) => {
+});*/
+app.post('/api/webhook', async (req, res) => {
     console.log("✅ Webhook リクエスト受信");
     console.log("🔹 受信したデータ:", req.body);
 
@@ -60,15 +60,15 @@ app.post('/api/webhook', async (req, res) => {
     console.log("✅ 署名が正しく検証されました");
     res.json({ success: true, message: '署名検証成功' });
 
-      // NFTチェック
+    /*  // NFTチェック
     const isEligible = await verifyWalletOwnership(address);
     if (isEligible) {
         const member = await discordClient.guilds.cache.get(GUILD_ID).members.fetch(userId);
         await assignRole(member);
         return res.json({ success: true, message: 'NFTを確認し、ロールを付与しました。' });
     } else {
-        return res.status(400).json({ error: 'NFTを確認できませんでした。' });
-});*/
+        return res.status(400).json({ error: 'NFTを確認できませんでした。' });*/
+});
 
 
 app.listen(3000, () => console.log('Webhookサーバー起動！'));
