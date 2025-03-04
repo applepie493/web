@@ -1,5 +1,5 @@
 const express = require('express');
-const { verifySignature } = require('../services/signatureService');
+const { verifySignature, getNonce } = require('./services/signatureService');
 const { verifyWalletOwnership } = require('../services/walletService');
 const { assignRole } = require('../services/roleService');
 
