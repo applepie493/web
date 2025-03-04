@@ -59,6 +59,15 @@ app.post('/api/webhook', async (req, res) => {
 
     console.log("✅ 署名が正しく検証されました");
     res.json({ success: true, message: '署名検証成功' });
+
+      // NFTチェック
+    const isEligible = await verifyWalletOwnership(address);
+    if (isEligible) {
+        const member = await discordClient.guilds.cache.get(GUILD_ID).members.fetch(userId);
+        await assignRole(member);
+        return res.json({ success: true, message: 'NFTを確認し、ロールを付与しました。' });
+    } else {
+        return res.status(400).json({ error: 'NFTを確認できませんでした。' });
 });
 
 
