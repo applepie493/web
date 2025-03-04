@@ -6,7 +6,7 @@ const { assignRole } = require('../services/roleService');
 const app = express();
 app.use(express.json());
 
-/*app.post('/api/webhook', async (req, res) => {
+app.post('/api/webhook', async (req, res) => {
     const { userId, address, signature } = req.body;
 
     // nonceを取得
@@ -29,8 +29,8 @@ app.use(express.json());
     } else {
         return res.status(400).json({ error: 'NFTを確認できませんでした。' });
     }
-});*/
-app.post('/api/webhook', async (req, res) => {
+});
+/*app.post('/api/webhook', async (req, res) => {
     console.log("✅ Webhook リクエスト受信");
     console.log("🔹 受信したデータ:", req.body);
 
@@ -68,7 +68,7 @@ app.post('/api/webhook', async (req, res) => {
         return res.json({ success: true, message: 'NFTを確認し、ロールを付与しました。' });
     } else {
         return res.status(400).json({ error: 'NFTを確認できませんでした。' });
-});
+});*/
 
 
 app.listen(3000, () => console.log('Webhookサーバー起動！'));
