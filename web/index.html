@@ -91,13 +91,15 @@
                 const signer = provider.getSigner();
                 const address = (await signer.getAddress()).toUpperCase(); // ✅ 大文字に変換
         
-                // ✅ 取得したアドレスも短縮表記に変換
+                // ✅ 取得したアドレスを短縮表記に変換
                 const shortAddress = address.slice(0, 6) + "..." + address.slice(-4);
                 console.log("✅ ウォレットアドレス（短縮・大文字）:", shortAddress);
         
                 console.log("📜 短縮済みウォレットリスト:", walletList); // 確認ログ追加
         
-                const isInList = walletList.includes(shortAddress);
+                // ✅ `includes()` を `some()` に変更し、確実に比較
+                const isInList = walletList.some(addr => addr.trim() === shortAddress.trim());
+        
                 if (isInList) {
                     document.getElementById("result").textContent = "✅ 該当！";
                     console.log("✅ ウォレットリストに含まれています");
@@ -117,6 +119,7 @@
                 alert("認証に失敗しました。");
             }
         }
+
 
 
         // Discordのロールを付与
