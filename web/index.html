@@ -12,9 +12,6 @@
     <p id="result"></p>
 
     <script>
-        const BLOCKVISION_API = "https://api.blockvision.org/v2/monad/collection/holders";
-        const NFT_CONTRACT = "0x38477a51e2a69e831512d4b36410b0689d8c5e2b";
-
         window.onload = function () {
             document.getElementById("signButton").addEventListener("click", signMessage);
         };
@@ -38,14 +35,14 @@
                 const address = await signer.getAddress();
                 console.log("✅ ウォレットアドレス:", address);
 
-                // NFT所有確認（BlockVision API）
-                const hasNFT = await checkNFTOwnership(address);
-                if (hasNFT) {
-                    document.getElementById("result").textContent = "✅ NFT所有確認済み！（BlockVision API）";
-                    console.log("✅ NFT所有確認成功");
+                // output.txt を読み込んでチェック
+                const isInList = await checkWalletInList(address);
+                if (isInList) {
+                    document.getElementById("result").textContent = "✅ 該当！";
+                    console.log("✅ ウォレットリストに含まれています");
                 } else {
-                    document.getElementById("result").textContent = "❌ NFTを所有していません。（BlockVision API）";
-                    console.log("❌ NFT所有なし");
+                    document.getElementById("result").textContent = "❌ 該当なし";
+                    console.log("❌ ウォレットリストに含まれていません");
                 }
             } catch (error) {
                 console.error("❌ 認証エラー:", error);
@@ -53,39 +50,26 @@
             }
         }
 
-    async function checkNFTOwnership(userAddress) {
-        const BLOCKVISION_API = "https://api.blockvision.org/v2/monad/collection/holders";
-        const API_KEY = "2tsYBqY0lhEI3iyF61cRxqKCaS3"; // ✅ ここにAPIキーを設定
-        const NFT_CONTRACT = "0x38477a51e2a69e831512d4b36410b0689d8c5e2b";
-    
-        try {
-            const response = await fetch(`${BLOCKVISION_API}?contractAddress=${NFT_CONTRACT}&pageIndex=1&pageSize=50`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}` // ✅ APIキーをヘッダーに追加
-                }
-            });
-    
-            if (!response.ok) {
-                console.error("❌ BlockVision API エラー:", response.statusText);
+        async function checkWalletInList(userAddress) {
+            try {
+                const response = await fetch("output.txt");
+                if (!response.ok) throw new Error("リストの取得に失敗");
+
+                const text = await response.text();
+                const walletList = text.split("\n").map(line => line.trim());
+
+                // 短縮表記に変換
+                const formattedUserAddress = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+
+                console.log("🔍 確認中のウォレット:", formattedUserAddress);
+                console.log("📜 ウォレットリスト:", walletList);
+
+                return walletList.includes(formattedUserAddress);
+            } catch (error) {
+                console.error("❌ リストチェックエラー:", error);
                 return false;
             }
-    
-            const data = await response.json();
-            console.log("📌 取得したNFT保有者リスト:", data);
-    
-            const holders = data.result || [];
-            const hasNFT = holders.some(holder => holder.address.toLowerCase() === userAddress.toLowerCase());
-    
-            return hasNFT;
-        } catch (error) {
-            console.error("❌ BlockVision API エラー:", error);
-            return false;
         }
-    }
-
-
     </script>
 </body>
 </html>
