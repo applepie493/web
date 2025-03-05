@@ -53,20 +53,35 @@
             }
         }
 
-        async function checkNFTOwnership(userAddress) {
-            try {
-                const response = await fetch(`${BLOCKVISION_API}/account/tokens?owner=${userAddress}`);
-                const data = await response.json();
-                console.log("📌 取得したNFT情報:", data);
-
-                const tokens = data.result || [];
-                const hasNFT = tokens.some(token => token.contract_address.toLowerCase() === NFT_CONTRACT.toLowerCase());
-                return hasNFT;
-            } catch (error) {
-                console.error("❌ BlockVision API エラー:", error);
+    async function checkNFTOwnership(userAddress) {
+        const BLOCKVISION_API = "https://monad-testnet.blockvision.org/v1/2tsYBqY0lhEI3iyF61cRxqKCaS3";
+        
+        try {
+            const response = await fetch(`${BLOCKVISION_API}/tokens?owner=${userAddress}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                redirect: "follow"
+            });
+    
+            if (!response.ok) {
+                console.error("❌ BlockVision API 404 エラー:", response.statusText);
                 return false;
             }
+    
+            const data = await response.json();
+            console.log("📌 取得したNFT情報:", data);
+    
+            const tokens = data.result || [];
+            const hasNFT = tokens.some(token => token.contract_address.toLowerCase() === NFT_CONTRACT.toLowerCase());
+            return hasNFT;
+        } catch (error) {
+            console.error("❌ BlockVision API エラー:", error);
+            return false;
         }
+    }
+
     </script>
 </body>
 </html>
