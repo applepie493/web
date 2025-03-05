@@ -53,28 +53,45 @@
             }
         }
 
-    async function checkERC1155Ownership(userAddress) {
-        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-        const abi = ["function balanceOf(address owner, uint256 id) view returns (uint256)"];
-        const contract = new ethers.Contract(NFT_CONTRACT, abi, provider);
+    async function checkNFTOwnership(userAddress) {
+    const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+    const abi = [
+        "function balanceOf(address owner) view returns (uint256)", // ERC-721用
+        "function balanceOf(address owner, uint256 id) view returns (uint256)", // ERC-1155用
+        "function ownerOf(uint256 tokenId) view returns (address)" // ERC-721のowner取得用
+    ];
     
+    const contract = new ethers.Contract(NFT_CONTRACT, abi, provider);
+
+    try {
+        // まずERC-721としてチェック
         try {
-            const tokenId = 0; // ✅ Token ID を 0 に修正
-            const balance = await contract.balanceOf(userAddress, tokenId);
-            console.log(`ERC-1155 NFT (Token ID: ${tokenId}) 保有数:`, balance.toString());
-            
-            if (balance.gt(0)) {
-                document.getElementById("result").textContent = "✅ NFT所有確認済み！";
+            const owner = await contract.ownerOf(1); // `tokenId = 1` で確認
+            if (owner.toLowerCase() === userAddress.toLowerCase()) {
+                console.log("✅ ERC-721 NFTを所有しています");
                 return true;
-            } else {
-                document.getElementById("result").textContent = "❌ NFTを所有していません。";
-                return false;
             }
-        } catch (error) {
-            console.error("❌ ERC-1155 NFT確認エラー:", error);
-            return false;
+        } catch (e) {
+            console.log("⚠ ERC-721の `ownerOf` でエラー。ERC-1155を試します...");
         }
+
+        // 次にERC-1155としてチェック
+        try {
+            const balance = await contract.balanceOf(userAddress, 0); // `tokenId = 0`
+            console.log("NFT保有数:", balance.toString());
+            return balance.gt(0);
+        } catch (e) {
+            console.log("⚠ ERC-1155の `balanceOf` でエラー");
+        }
+
+        console.log("❌ NFT所有なし");
+        return false;
+    } catch (error) {
+        console.error("❌ NFT確認エラー:", error);
+        return false;
     }
+}
+
 
     </script>
 </body>
