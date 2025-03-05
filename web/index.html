@@ -51,43 +51,44 @@
 
         // ウォレット認証
         async function signMessage() {
-                console.log("📌 signMessage() が実行されました");
-            
-                if (!window.ethereum) {
-                    alert("Metamaskをインストールしてください！");
-                    return;
-                }
-            
-                try {
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    await provider.send("eth_requestAccounts", []);
-                    const signer = provider.getSigner();
-                    const address = (await signer.getAddress()).toLowerCase(); // 小文字に統一
-            
-                    // ✅ アドレスを短縮表記に変換
-                    const shortAddress = address.slice(0, 6) + "..." + address.slice(-4);
-                    console.log("✅ ウォレットアドレス（短縮）:", shortAddress);
-            
-                    const isInList = walletList.includes(shortAddress);
-                    if (isInList) {
-                        document.getElementById("result").textContent = "✅ 該当！";
-                        console.log("✅ ウォレットリストに含まれています");
-            
-                        if (discordUserId) {
-                            const success = await assignDiscordRole(discordUserId);
-                            if (success) alert("🎉 ロールが付与されました！");
-                        } else {
-                            alert("❌ Discord認証が必要です！");
-                        }
-                    } else {
-                        document.getElementById("result").textContent = "❌ 該当なし";
-                        console.log("❌ ウォレットリストに含まれていません");
-                    }
-                } catch (error) {
-                    console.error("❌ 認証エラー:", error);
-                    alert("認証に失敗しました。");
-                }
+            console.log("📌 signMessage() が実行されました");
+        
+            if (!window.ethereum) {
+                alert("Metamaskをインストールしてください！");
+                return;
             }
+        
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                const address = (await signer.getAddress()).toUpperCase(); // ✅ 大文字に変換
+        
+                // ✅ アドレスを短縮表記に変換
+                const shortAddress = address.slice(0, 6) + "..." + address.slice(-4);
+                console.log("✅ ウォレットアドレス（短縮・大文字）:", shortAddress);
+        
+                const isInList = walletList.includes(shortAddress);
+                if (isInList) {
+                    document.getElementById("result").textContent = "✅ 該当！";
+                    console.log("✅ ウォレットリストに含まれています");
+        
+                    if (discordUserId) {
+                        const success = await assignDiscordRole(discordUserId);
+                        if (success) alert("🎉 ロールが付与されました！");
+                    } else {
+                        alert("❌ Discord認証が必要です！");
+                    }
+                } else {
+                    document.getElementById("result").textContent = "❌ 該当なし";
+                    console.log("❌ ウォレットリストに含まれていません");
+                }
+            } catch (error) {
+                console.error("❌ 認証エラー:", error);
+                alert("認証に失敗しました。");
+            }
+        }
+
         // Discordのロールを付与
         async function assignDiscordRole(discordUserId) {
             const botToken = "YOUR_DISCORD_BOT_TOKEN"; // Discord Bot トークン
