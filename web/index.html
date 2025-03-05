@@ -8,38 +8,73 @@
 </head>
 <body>
     <h2>Metamaskでウォレット認証</h2>
-    <button id="signButton">署名する</button>
+    <button id="discordLoginButton">Discordでログイン</button>
+    <button id="signButton" disabled>ウォレット認証</button>
     <p id="result"></p>
 
     <script>
-        window.onload = function () {
-            document.getElementById("signButton").addEventListener("click", signMessage);
-        };
+        let discordUserId = null;
 
+        // Discord OAuth2 認証
+        async function signInWithDiscord() {
+            const clientId = "YOUR_DISCORD_CLIENT_ID";  // DiscordのクライアントID
+            const redirectUri = window.location.origin + "/"; // 認証後のリダイレクト先
+            const scope = "identify";
+            const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}`;
+
+            window.location.href = authUrl; // 認証ページへリダイレクト
+        }
+
+        // URLからアクセストークンを取得し、Discordのユーザー情報を取得
+        async function getDiscordUserInfo() {
+            const hash = window.location.hash;
+            if (!hash.includes("access_token")) return;
+
+            const params = new URLSearchParams(hash.replace("#", ""));
+            const accessToken = params.get("access_token");
+
+            if (!accessToken) return;
+
+            try {
+                const response = await fetch("https://discord.com/api/users/@me", {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                });
+                const data = await response.json();
+                discordUserId = data.id;
+                document.getElementById("signButton").disabled = false; // ウォレット認証ボタンを有効化
+                console.log("✅ Discord ユーザーID:", discordUserId);
+            } catch (error) {
+                console.error("❌ Discord ユーザー情報取得エラー:", error);
+            }
+        }
+
+        // ウォレット認証
         async function signMessage() {
             console.log("📌 signMessage() が実行されました");
 
             if (!window.ethereum) {
                 alert("Metamaskをインストールしてください！");
-                console.log("❌ Metamaskが見つかりません");
                 return;
             }
 
             try {
-                // Metamask接続
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
-                console.log("✅ Metamaskの接続に成功");
-
                 const signer = provider.getSigner();
-                const address = await signer.getAddress();
+                const address = (await signer.getAddress()).toLowerCase();
                 console.log("✅ ウォレットアドレス:", address);
 
-                // output.txt を読み込んでチェック
-                const isInList = await checkWalletInList(address);
+                const isInList = walletList.includes(address);
                 if (isInList) {
                     document.getElementById("result").textContent = "✅ 該当！";
                     console.log("✅ ウォレットリストに含まれています");
+
+                    if (discordUserId) {
+                        const success = await assignDiscordRole(discordUserId);
+                        if (success) alert("🎉 ロールが付与されました！");
+                    } else {
+                        alert("❌ Discord認証が必要です！");
+                    }
                 } else {
                     document.getElementById("result").textContent = "❌ 該当なし";
                     console.log("❌ ウォレットリストに含まれていません");
@@ -50,24 +85,48 @@
             }
         }
 
-       // ウォレットリストを直接埋め込む
-const walletList = [
-    "0x0000...dEaD", "0x255E...2D24", "0x571F...250d", "0xD14c...3c67",
-    "0xc717...971C", "0x29C7...e086", "0xff11...11Cf", "0xEd9C...DCDE",
-    "0xd287...2D84", "0xCeD4...1902", "0x9694...C7B4", "0x961B...018C",
-    "0x909C...2cfD", "0x7489...BB9D", "0x6DE8...7960", "0x35Ce...6762",
-    "0x124E...3FA7", "0xff70...917e", "0xFE29...6eD7", "0xb716...8E51"
-    // 必要に応じて続ける...
-];
+        // Discordのロールを付与
+        async function assignDiscordRole(discordUserId) {
+            const botToken = "YOUR_DISCORD_BOT_TOKEN"; // Discord Bot トークン
+            const guildId = "YOUR_GUILD_ID"; // サーバーID
+            const roleId = "YOUR_ROLE_ID"; // 付与するロールのID
 
-async function checkWalletInList(userAddress) {
-    const formattedUserAddress = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
-    console.log("🔍 確認中のウォレット:", formattedUserAddress);
-    console.log("📜 ウォレットリスト:", walletList);
-    return walletList.includes(formattedUserAddress);
-}
+            try {
+                const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `Bot ${botToken}`,
+                        "Content-Type": "application/json"
+                    }
+                });
 
+                if (response.ok) {
+                    console.log(`✅ ロールを付与しました: ${discordUserId}`);
+                    return true;
+                } else {
+                    console.error(`❌ ロール付与エラー: ${response.status} ${response.statusText}`);
+                    return false;
+                }
+            } catch (error) {
+                console.error("❌ Discord API エラー:", error);
+                return false;
+            }
+        }
 
+        // ウォレットリスト
+        const walletList = [
+            "0x0000...dEaD", "0x255E...2D24", "0x571F...250d", "0xD14c...3c67",
+            "0xc717...971C", "0x29C7...e086", "0xff11...11Cf", "0xEd9C...DCDE",
+            "0xd287...2D84", "0xCeD4...1902", "0x9694...C7B4", "0x961B...018C",
+            "0x909C...2cfD", "0x7489...BB9D", "0x6DE8...7960", "0x35Ce...6762",
+            "0x124E...3FA7", "0xff70...917e", "0xFE29...6eD7", "0xb716...8E51"
+        ];
+
+        document.getElementById("discordLoginButton").addEventListener("click", signInWithDiscord);
+        document.getElementById("signButton").addEventListener("click", signMessage);
+
+        // ページ読み込み時にDiscordユーザー情報を取得
+        window.onload = getDiscordUserInfo;
     </script>
 </body>
 </html>
