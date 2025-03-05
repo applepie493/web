@@ -17,11 +17,11 @@
 
         // Discord OAuth2 認証
         async function signInWithDiscord() {
-            const clientId = "YOUR_DISCORD_CLIENT_ID";  // DiscordのクライアントID
-            const redirectUri = encodeURIComponent("https://web-gilt-nine.vercel.app/"); // ✅ 設定したリダイレクトURI
-            const scope = "identify";  // ✅ 必要なスコープのみ
+            const clientId = "1346459610663354378";  // DiscordのクライアントID
+            const redirectUri = encodeURIComponent("https://web-gilt-nine.vercel.app/");  // ✅ Discord Developer Portal に登録済みのURL
+            const scope = "identify";  
             const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
-        
+            
             window.location.href = authUrl; // 認証ページへリダイレクト
         }
 
