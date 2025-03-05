@@ -52,11 +52,12 @@
 
         async function checkWalletInList(userAddress) {
             try {
-                const response = await fetch("output.txt");
+                const response = await fetch("./output.txt"); // ✅ パスを修正
                 if (!response.ok) throw new Error("リストの取得に失敗");
 
                 const text = await response.text();
-                const walletList = text.split("\n").map(line => line.trim());
+                console.log("📜 読み込んだリスト:", text); // ✅ 取得した内容をログに表示
+                const walletList = text.split("\n").map(line => line.trim()).filter(line => line.startsWith("0x"));
 
                 // 短縮表記に変換
                 const formattedUserAddress = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
