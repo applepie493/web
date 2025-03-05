@@ -12,7 +12,7 @@
     <p id="result"></p>
 
     <script>
-        const RPC_URL = "https://testnet-rpc.monad.xyz/";
+        const BLOCKVISION_API = "https://monad-testnet.blockvision.org/v1/2tsYBqY0lhEI3iyF61cRxqKCaS3";
         const NFT_CONTRACT = "0x38477a51e2a69e831512d4b36410b0689d8c5e2b";
 
         window.onload = function () {
@@ -38,13 +38,13 @@
                 const address = await signer.getAddress();
                 console.log("✅ ウォレットアドレス:", address);
 
-                // NFT所有確認
+                // NFT所有確認（BlockVision API）
                 const hasNFT = await checkNFTOwnership(address);
                 if (hasNFT) {
-                    document.getElementById("result").textContent = "✅ NFT所有確認済み！";
+                    document.getElementById("result").textContent = "✅ NFT所有確認済み！（BlockVision API）";
                     console.log("✅ NFT所有確認成功");
                 } else {
-                    document.getElementById("result").textContent = "❌ NFTを所有していません。";
+                    document.getElementById("result").textContent = "❌ NFTを所有していません。（BlockVision API）";
                     console.log("❌ NFT所有なし");
                 }
             } catch (error) {
@@ -53,46 +53,20 @@
             }
         }
 
-    async function checkNFTOwnership(userAddress) {
-    const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-    const abi = [
-        "function balanceOf(address owner) view returns (uint256)", // ERC-721用
-        "function balanceOf(address owner, uint256 id) view returns (uint256)", // ERC-1155用
-        "function ownerOf(uint256 tokenId) view returns (address)" // ERC-721のowner取得用
-    ];
-    
-    const contract = new ethers.Contract(NFT_CONTRACT, abi, provider);
+        async function checkNFTOwnership(userAddress) {
+            try {
+                const response = await fetch(`${BLOCKVISION_API}/account/tokens?owner=${userAddress}`);
+                const data = await response.json();
+                console.log("📌 取得したNFT情報:", data);
 
-    try {
-        // まずERC-721としてチェック
-        try {
-            const owner = await contract.ownerOf(1); // `tokenId = 1` で確認
-            if (owner.toLowerCase() === userAddress.toLowerCase()) {
-                console.log("✅ ERC-721 NFTを所有しています");
-                return true;
+                const tokens = data.result || [];
+                const hasNFT = tokens.some(token => token.contract_address.toLowerCase() === NFT_CONTRACT.toLowerCase());
+                return hasNFT;
+            } catch (error) {
+                console.error("❌ BlockVision API エラー:", error);
+                return false;
             }
-        } catch (e) {
-            console.log("⚠ ERC-721の `ownerOf` でエラー。ERC-1155を試します...");
         }
-
-        // 次にERC-1155としてチェック
-        try {
-            const balance = await contract.balanceOf(userAddress, 0); // `tokenId = 0`
-            console.log("NFT保有数:", balance.toString());
-            return balance.gt(0);
-        } catch (e) {
-            console.log("⚠ ERC-1155の `balanceOf` でエラー");
-        }
-
-        console.log("❌ NFT所有なし");
-        return false;
-    } catch (error) {
-        console.error("❌ NFT確認エラー:", error);
-        return false;
-    }
-}
-
-
     </script>
 </body>
 </html>
