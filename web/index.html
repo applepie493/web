@@ -55,18 +55,20 @@
 
     async function checkNFTOwnership(userAddress) {
         const BLOCKVISION_API = "https://api.blockvision.org/v2/monad/collection/holders";
+        const API_KEY = "2tsYBqY0lhEI3iyF61cRxqKCaS3"; // ✅ ここにAPIキーを設定
         const NFT_CONTRACT = "0x38477a51e2a69e831512d4b36410b0689d8c5e2b";
     
         try {
             const response = await fetch(`${BLOCKVISION_API}?contractAddress=${NFT_CONTRACT}&pageIndex=1&pageSize=50`, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${API_KEY}` // ✅ APIキーをヘッダーに追加
                 }
             });
     
             if (!response.ok) {
-                console.error("❌ BlockVision API 404 エラー:", response.statusText);
+                console.error("❌ BlockVision API エラー:", response.statusText);
                 return false;
             }
     
