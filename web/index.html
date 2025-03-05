@@ -9,8 +9,12 @@
 <body>
     <h2>Metamaskでウォレット認証</h2>
     <button id="signButton">署名する</button>
+    <p id="result"></p>
 
     <script>
+        const RPC_URL = "https://testnet-rpc.monad.xyz/";
+        const NFT_CONTRACT = "0x38477a51e2a69e831512d4b36410b0689d8c5e2b";
+
         window.onload = function () {
             document.getElementById("signButton").addEventListener("click", signMessage);
         };
@@ -24,36 +28,8 @@
                 return;
             }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('user');
-            const nonce = urlParams.get('nonce');
-
-            console.log("✅ 取得したURLパラメータ:", { userId, nonce });
-
-            if (!userId || !nonce) {
-                alert("認証エラー: 不正なリクエスト");
-                console.log("❌ URLパラメータが取得できていません");
-                return;
-            }
-
             try {
-                // 🔹 nonce をサーバーに送信して保存
-                console.log("🔹 nonce をサーバーに送信中...");
-                const verifyResponse = await fetch("https://web-gilt-nine.vercel.app/api/verify", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ userId, nonce })
-                });
-
-                if (!verifyResponse.ok) {
-                    console.error("❌ nonce の保存に失敗:", await verifyResponse.text());
-                    alert("認証エラー: nonce の保存に失敗しました");
-                    return;
-                }
-
-                console.log("✅ nonce をサーバーに保存成功");
-
-                // 🔹 Metamask で署名処理
+                // Metamask接続
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
                 console.log("✅ Metamaskの接続に成功");
@@ -62,23 +38,33 @@
                 const address = await signer.getAddress();
                 console.log("✅ ウォレットアドレス:", address);
 
-                const decodedNonce = decodeURIComponent(nonce);
-                console.log("✅ デコード後のnonce:", decodedNonce);
-
-                const signature = await signer.signMessage(decodedNonce);
-                console.log("✅ 署名成功:", signature);
-
-                // 🔹 署名を `/api/webhook` に送信
-                await fetch("https://web-gilt-nine.vercel.app/api/webhook", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ userId, address, signature })
-                });
-
-                alert("認証完了！Discordを確認してください");
+                // NFT所有確認
+                const hasNFT = await checkNFTOwnership(address);
+                if (hasNFT) {
+                    document.getElementById("result").textContent = "✅ NFT所有確認済み！";
+                    console.log("✅ NFT所有確認成功");
+                } else {
+                    document.getElementById("result").textContent = "❌ NFTを所有していません。";
+                    console.log("❌ NFT所有なし");
+                }
             } catch (error) {
-                console.error("❌ 署名エラー:", error);
-                alert("署名に失敗しました。詳細はコンソールを確認してください。");
+                console.error("❌ 認証エラー:", error);
+                alert("認証に失敗しました。");
+            }
+        }
+
+        async function checkNFTOwnership(userAddress) {
+            const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+            const abi = ["function balanceOf(address owner) view returns (uint256)"];
+            const contract = new ethers.Contract(NFT_CONTRACT, abi, provider);
+            
+            try {
+                const balance = await contract.balanceOf(userAddress);
+                console.log("NFT保有数:", balance.toString());
+                return balance.gt(0);
+            } catch (error) {
+                console.error("❌ NFT確認エラー:", error);
+                return false;
             }
         }
     </script>
