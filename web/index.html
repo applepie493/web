@@ -10,6 +10,7 @@
     <h2>Metamaskでウォレット認証</h2>
     <button id="discordLoginButton">Discordでログイン</button>
     <button id="signButton" disabled>ウォレット認証</button>
+    <button id="checkERC1155">ERC-1155 NFTをチェック</button>
     <p id="result"></p>
 
     <script>
@@ -191,7 +192,8 @@
 
         document.getElementById("discordLoginButton").addEventListener("click", signInWithDiscord);
         document.getElementById("signButton").addEventListener("click", signMessage);
-
+        document.getElementById("checkERC1155").addEventListener("click", checkERC1155Balance);
+        
         // ページ読み込み時にDiscordユーザー情報を取得
         window.onload = getDiscordUserInfo;
     </script>
