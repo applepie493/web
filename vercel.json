@@ -7,6 +7,5 @@
   "routes": [
     { "src": "/api/webhook", "dest": "api/webhook.js" },
     { "src": "/(.*)", "dest": "web/index.html" }
-    { "src": "/output.txt", "dest": "/public/output.txt" }
   ]
 }
