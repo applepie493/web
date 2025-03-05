@@ -50,27 +50,23 @@
             }
         }
 
-        async function checkWalletInList(userAddress) {
-            try {
-                const response = await fetch("/output.txt"); // ✅ 絶対パスに変更
-                if (!response.ok) throw new Error(`リストの取得に失敗: ${response.status} ${response.statusText}`);
-        
-                const text = await response.text();
-                console.log("📜 読み込んだリスト:", text); // ✅ 取得した内容をログに表示
-                const walletList = text.split("\n").map(line => line.trim()).filter(line => line.startsWith("0x"));
-        
-                // 短縮表記に変換
-                const formattedUserAddress = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
-        
-                console.log("🔍 確認中のウォレット:", formattedUserAddress);
-                console.log("📜 ウォレットリスト:", walletList);
-        
-                return walletList.includes(formattedUserAddress);
-            } catch (error) {
-                console.error("❌ リストチェックエラー:", error);
-                return false;
-            }
-        }
+       // ウォレットリストを直接埋め込む
+const walletList = [
+    "0x0000...dEaD", "0x255E...2D24", "0x571F...250d", "0xD14c...3c67",
+    "0xc717...971C", "0x29C7...e086", "0xff11...11Cf", "0xEd9C...DCDE",
+    "0xd287...2D84", "0xCeD4...1902", "0x9694...C7B4", "0x961B...018C",
+    "0x909C...2cfD", "0x7489...BB9D", "0x6DE8...7960", "0x35Ce...6762",
+    "0x124E...3FA7", "0xff70...917e", "0xFE29...6eD7", "0xb716...8E51"
+    // 必要に応じて続ける...
+];
+
+async function checkWalletInList(userAddress) {
+    const formattedUserAddress = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+    console.log("🔍 確認中のウォレット:", formattedUserAddress);
+    console.log("📜 ウォレットリスト:", walletList);
+    return walletList.includes(formattedUserAddress);
+}
+
 
     </script>
 </body>
