@@ -136,21 +136,25 @@
                     body: JSON.stringify({ discordUserId }),
                 });
         
-                const data = await response.json();
-                console.log("🔹 API レスポンス:", data);
+                // ✅ レスポンスのステータスコードを確認
+                console.log(`🔹 API ステータス: ${response.status}`);
         
-                if (response.ok) {
-                    console.log(`✅ ロールを付与しました: ${discordUserId}`);
-                    return true;
-                } else {
-                    console.error(`❌ ロール付与エラー: ${data.message}`);
+                if (!response.ok) {
+                    const text = await response.text(); // JSONエラーを防ぐために text() を使う
+                    console.error("❌ API レスポンスエラー:", text);
                     return false;
                 }
+        
+                const data = await response.json(); // ✅ ここで JSON を解析
+                console.log("✅ API レスポンス:", data);
+        
+                return true;
             } catch (error) {
                 console.error("❌ Discord API エラー:", error);
                 return false;
             }
         }
+
 
 
 
