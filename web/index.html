@@ -137,6 +137,7 @@
                 });
         
                 const data = await response.json();
+                console.log("🔹 API レスポンス:", data);
         
                 if (response.ok) {
                     console.log(`✅ ロールを付与しました: ${discordUserId}`);
@@ -150,6 +151,7 @@
                 return false;
             }
         }
+
 
 
 
