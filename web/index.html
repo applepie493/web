@@ -69,6 +69,8 @@
         
                 // ✅ 結果を画面に表示
                 document.getElementById("result").textContent = `✅ 認証成功: ${address}`;
+
+                document.getElementById("checkERC1155").disabled = false; // ③を有効化
         
                 
             } catch (error) {
