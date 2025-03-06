@@ -89,49 +89,60 @@
 
 
     async function signMessage() {
-    console.log("📌 signMessage() が実行されました");
-
-    if (!window.ethereum) {
-        alert("Metamaskをインストールしてください！");
-        return;
+        console.log("📌 signMessage() が実行されました");
+    
+        if (!window.ethereum) {
+            alert("Metamaskをインストールしてください！");
+            return;
+        }
+    
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const address = (await signer.getAddress()).toUpperCase(); // ✅ 大文字に変換
+    
+            console.log("✅ ウォレットアドレス:", address);
+    
+            // ✅ 結果を画面に表示
+            document.getElementById("result").textContent = `✅ 認証成功: ${address}`;
+    
+            // ✅ Discord認証済みならロール付与を実行
+            if (discordUserId) {
+                const success = await assignDiscordRole(discordUserId);
+                if (success) {
+                    alert("🎉 Discordロールが付与されました！");
+                } else {
+                    alert("❌ Discordロールの付与に失敗しました！");
+                }
+            } else {
+                alert("❌ Discord認証が必要です！");
+            }
+        } catch (error) {
+            console.error("❌ 認証エラー:", error);
+            alert("認証に失敗しました。");
+        }
     }
 
-    try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const address = (await signer.getAddress()).toUpperCase(); // ✅ 大文字に変換
-
-        console.log("✅ ウォレットアドレス:", address);
-
-        // ✅ 結果を画面に表示
-        document.getElementById("result").textContent = `✅ 認証成功: ${address}`;
-    } catch (error) {
-        console.error("❌ 認証エラー:", error);
-        alert("認証に失敗しました。");
-    }
-}
 
         // Discordのロールを付与
         async function assignDiscordRole(discordUserId) {
-            const botToken = "YOUR_DISCORD_BOT_TOKEN"; // Discord Bot トークン
-            const guildId = "YOUR_GUILD_ID"; // サーバーID
-            const roleId = "YOUR_ROLE_ID"; // 付与するロールのID
-
             try {
-                const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`, {
-                    method: "PUT",
+                const response = await fetch("/api/assignRole", {
+                    method: "POST",
                     headers: {
-                        "Authorization": `Bot ${botToken}`,
-                        "Content-Type": "application/json"
-                    }
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ discordUserId }),
                 });
-
+        
+                const data = await response.json();
+        
                 if (response.ok) {
                     console.log(`✅ ロールを付与しました: ${discordUserId}`);
                     return true;
                 } else {
-                    console.error(`❌ ロール付与エラー: ${response.status} ${response.statusText}`);
+                    console.error(`❌ ロール付与エラー: ${data.message}`);
                     return false;
                 }
             } catch (error) {
@@ -139,6 +150,7 @@
                 return false;
             }
         }
+
 
 
         document.getElementById("discordLoginButton").addEventListener("click", signInWithDiscord);
