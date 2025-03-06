@@ -1,5 +1,6 @@
 export default async function handler(req, res) {
     if (req.method !== "POST") {
+        console.error("❌ Method Not Allowed:", req.method);
         return res.status(405).json({ message: "Method Not Allowed" });
     }
 
@@ -27,12 +28,13 @@ export default async function handler(req, res) {
             }
         );
 
-        const data = await response.json();
-        console.log("🔹 Discord API レスポンス:", data);
+        // ✅ Discord APIのレスポンスの確認
+        const text = await response.text(); // JSONでない場合の対策
+        console.log("🔹 Discord API レスポンス:", text);
 
         if (!response.ok) {
-            console.error(`❌ Discord API エラー: ${response.status} ${response.statusText}`, data);
-            return res.status(response.status).json({ message: data });
+            console.error(`❌ Discord API エラー: ${response.status} ${response.statusText}`, text);
+            return res.status(response.status).json({ message: text });
         }
 
         console.log(`✅ ロールを付与しました: ${discordUserId}`);
