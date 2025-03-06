@@ -9,8 +9,11 @@ export default async function handler(req, res) {
     const roleId = process.env.YOUR_ROLE_ID;
 
     if (!botToken || !guildId || !roleId) {
+        console.error("❌ 環境変数が設定されていません");
         return res.status(500).json({ message: "Missing Discord API credentials" });
     }
+
+    console.log(`🔹 Discord APIリクエスト: ユーザーID ${discordUserId}, GuildID ${guildId}, RoleID ${roleId}`);
 
     try {
         const response = await fetch(
@@ -24,13 +27,18 @@ export default async function handler(req, res) {
             }
         );
 
+        const data = await response.json();
+        console.log("🔹 Discord API レスポンス:", data);
+
         if (!response.ok) {
-            const errorData = await response.json();
-            return res.status(response.status).json({ message: errorData });
+            console.error(`❌ Discord API エラー: ${response.status} ${response.statusText}`, data);
+            return res.status(response.status).json({ message: data });
         }
 
+        console.log(`✅ ロールを付与しました: ${discordUserId}`);
         return res.status(200).json({ message: "Role assigned successfully" });
     } catch (error) {
+        console.error("❌ Discord API へのリクエストに失敗:", error);
         return res.status(500).json({ message: "Discord API request failed", error });
     }
 }
