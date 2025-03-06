@@ -2,11 +2,12 @@
   "version": 2,
   "builds": [
     { "src": "api/webhook.js", "use": "@vercel/node" },
+    { "src": "api/assignRole.js", "use": "@vercel/node" }, 
     { "src": "web/index.html", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/webhook", "dest": "api/webhook.js" },
-    { "src": "/(.*)", "dest": "web/index.html" },
-    { "src": "/api/assignRole", "dest": "/api/assignRole.js" }
+    { "src": "/api/assignRole", "dest": "api/assignRole.js" },
+    { "src": "/(.*)", "dest": "web/index.html" }
   ]
 }
