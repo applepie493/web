@@ -8,16 +8,19 @@
 </head>
 <body>
     <h2>ウォレット認証</h2>
-    <button id="discordLoginButton">Discordでログイン</button>
+        <button id="discordLoginButton">Discordでログイン</button>
+        
+        <!-- ウォレット選択ボタン -->
+        <p>使用するウォレットを選択してください:</p>
+        <button id="useMetamaskButton">Metamask</button>
+        <button id="useHaHaButton">HaHa Wallet</button>
+        
+        <!-- 選択後に表示されるウォレット認証ボタン -->
+        <button id="signButton" disabled>選択したウォレットで認証</button>
+        
+        <button id="checkERC1155" disabled>NFT check</button>
+        <p id="result"></p>
 
-    <!-- ウォレット選択ボタン -->
-    <button id="selectWalletButton">ウォレット選択</button>
-
-    <!-- 選択後に表示されるウォレット認証ボタン -->
-    <button id="signButton" disabled>選択したウォレットで認証</button>
-
-    <button id="checkERC1155" disabled>NFT check</button>
-    <p id="result"></p>
 
     <script>
         let discordUserId = null;
@@ -58,68 +61,55 @@
         }
 
         // ウォレット選択処理
-        function selectWallet() {
-            if (window.haha && window.ethereum) {
-                // 両方ある場合、ユーザーに選択させる
-                const choice = confirm("使用するウォレットを選択してください。\nOK: Metamask\nキャンセル: HaHa Wallet");
-                selectedWallet = choice ? "metamask" : "haha";
-            } else if (window.haha) {
-                selectedWallet = "haha";
-            } else if (window.ethereum) {
-                selectedWallet = "metamask";
-            } else {
-                alert("Metamask または HaHa Wallet をインストールしてください！");
-                return;
-            }
-
+        function selectWallet(walletType) {
+            selectedWallet = walletType;
             console.log(`✅ 選択されたウォレット: ${selectedWallet}`);
             document.getElementById("signButton").disabled = false; // 認証ボタンを有効化
         }
 
         // ウォレット認証（選択したウォレットでサイン）
-    async function signMessage() {
-        console.log("📌 signMessage() が実行されました");
-
-        let provider;
-
-        if (selectedWallet === "haha" && window.haha) {
-            provider = new ethers.providers.Web3Provider(window.haha);
-            console.log("✅ HaHa Walletを使用します");
-        } else if (selectedWallet === "metamask" && window.ethereum) {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            console.log("✅ Metamaskを使用します");
-        } else {
-            alert("ウォレットが選択されていません！");
-            return;
+        async function signMessage() {
+            console.log("📌 signMessage() が実行されました");
+        
+            let provider;
+            if (selectedWallet === "haha" && window.haha) {
+                provider = new ethers.providers.Web3Provider(window.haha);
+                console.log("✅ HaHa Walletを使用します");
+            } else if (selectedWallet === "metamask" && window.ethereum) {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                console.log("✅ Metamaskを使用します");
+            } else {
+                alert("ウォレットが選択されていません！");
+                return;
+            }
+        
+            try {
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                const address = (await signer.getAddress()).toUpperCase();
+        
+                console.log("✅ ウォレットアドレス:", address);
+                document.getElementById("result").textContent = `✅ 認証成功: ${address}`;
+                document.getElementById("checkERC1155").disabled = false;
+            } catch (error) {
+                console.error("❌ 認証エラー:", error);
+                alert("認証に失敗しました。");
+            }
         }
-
-        try {
-            await provider.send("eth_requestAccounts", []);
-            const signer = provider.getSigner();
-            const address = (await signer.getAddress()).toUpperCase();
-
-            console.log("✅ ウォレットアドレス:", address);
-            document.getElementById("result").textContent = `✅ 認証成功: ${address}`;
-            document.getElementById("checkERC1155").disabled = false;
-        } catch (error) {
-            console.error("❌ 認証エラー:", error);
-            alert("認証に失敗しました。");
-        }
-    }
 
         async function checkERC1155Balance() {
-    let provider;
-
-    if (selectedWallet === "haha" && window.haha) {
-        provider = new ethers.providers.Web3Provider(window.haha);
-        console.log("✅ HaHa Wallet を使用してNFTを確認します");
-    } else if (selectedWallet === "metamask" && window.ethereum) {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        console.log("✅ Metamask を使用してNFTを確認します");
-    } else {
-        alert("ウォレットが選択されていません！");
-        return;
-    }
+            let provider;
+        
+            if (selectedWallet === "haha" && window.haha) {
+                provider = new ethers.providers.Web3Provider(window.haha);
+                console.log("✅ HaHa Wallet を使用してNFTを確認します");
+            } else if (selectedWallet === "metamask" && window.ethereum) {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                console.log("✅ Metamask を使用してNFTを確認します");
+            } else {
+                alert("ウォレットが選択されていません！");
+                return;
+            }
 
     try {
         await provider.send("eth_requestAccounts", []);
@@ -198,7 +188,8 @@
 
 
         document.getElementById("discordLoginButton").addEventListener("click", signInWithDiscord);
-        document.getElementById("selectWalletButton").addEventListener("click", selectWallet);
+        document.getElementById("useMetamaskButton").addEventListener("click", () => selectWallet("metamask"));
+        document.getElementById("useHaHaButton").addEventListener("click", () => selectWallet("haha"));
         document.getElementById("signButton").addEventListener("click", signMessage);
         document.getElementById("checkERC1155").addEventListener("click", checkERC1155Balance);
         
