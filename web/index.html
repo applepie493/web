@@ -108,52 +108,59 @@
     }
 
         async function checkERC1155Balance() {
-            if (!window.ethereum) {
-                alert("Metamaskをインストールしてください！");
-                return;
-            }
-        
-            try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                await provider.send("eth_requestAccounts", []);
-                const signer = provider.getSigner();
-                const walletAddress = await signer.getAddress();
-        
-                // ✅ 確認したいERC-1155コントラクトのアドレス & トークンID
-                const erc1155ContractAddress = "0x38477a51e2a69E831512D4b36410b0689D8c5E2B";
-                const tokenId = 0;  // ✅ 確認したいNFTのトークンID
-        
-                // ✅ ERC-1155 ABI（`balanceOf` を使うために最小限の定義）
-                const erc1155Abi = ["function balanceOf(address account, uint256 id) view returns (uint256)"];
-                const erc1155Contract = new ethers.Contract(erc1155ContractAddress, erc1155Abi, provider);
-        
-                // ✅ 特定の `tokenId` を持っているかチェック
-                const balance = await erc1155Contract.balanceOf(walletAddress, tokenId);
-                console.log(`🎨 ERC-1155 NFT(${tokenId}) 保有数: ${balance.toString()}`);
-        
-                if (balance.gt(0)) {
-                    document.getElementById("result").textContent = `✅ 該当（NFT ID ${tokenId} 保有）`;
-                    console.log(`✅ ウォレットはNFT（ID:${tokenId}）を保有しています！`);
-                
-                    // ✅ NFTを保有していて、Discord認証済みならロール付与
-                    if (discordUserId) {
-                        const success = await assignDiscordRole(discordUserId);
-                        if (success) {
-                            alert("🎉 Discordロールが付与されました！");
-                        } else {
-                            alert("❌ Discordロールの付与に失敗しました！");
-                        }
-                    }
-                } else {
-                    document.getElementById("result").textContent = `❌ 該当なし（NFT ID ${tokenId} 未保有）`;
-                    console.log(`❌ ウォレットはNFT（ID:${tokenId}）を持っていません`);
-                }
+    let provider;
 
-            } catch (error) {
-                console.error("❌ ERC-1155 NFT 保有確認エラー:", error);
-                alert("NFT保有チェックに失敗しました。");
+    if (selectedWallet === "haha" && window.haha) {
+        provider = new ethers.providers.Web3Provider(window.haha);
+        console.log("✅ HaHa Wallet を使用してNFTを確認します");
+    } else if (selectedWallet === "metamask" && window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        console.log("✅ Metamask を使用してNFTを確認します");
+    } else {
+        alert("ウォレットが選択されていません！");
+        return;
+    }
+
+    try {
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const walletAddress = await signer.getAddress();
+
+        // ✅ 確認したいERC-1155コントラクトのアドレス & トークンID
+        const erc1155ContractAddress = "0x38477a51e2a69E831512D4b36410b0689D8c5E2B";
+        const tokenId = 0; // 確認したいNFTのトークンID
+
+        // ✅ ERC-1155 ABI（`balanceOf` を使うために最小限の定義）
+        const erc1155Abi = ["function balanceOf(address account, uint256 id) view returns (uint256)"];
+        const erc1155Contract = new ethers.Contract(erc1155ContractAddress, erc1155Abi, provider);
+
+        // ✅ NFTの保有数を取得
+        const balance = await erc1155Contract.balanceOf(walletAddress, tokenId);
+        console.log(`🎨 ERC-1155 NFT(${tokenId}) 保有数: ${balance.toString()}`);
+
+        if (balance.gt(0)) {
+            document.getElementById("result").textContent = `✅ 該当（NFT ID ${tokenId} 保有）`;
+            console.log(`✅ ウォレットはNFT（ID:${tokenId}）を保有しています！`);
+            
+            // ✅ NFTを保有していて、Discord認証済みならロール付与
+            if (discordUserId) {
+                const success = await assignDiscordRole(discordUserId);
+                if (success) {
+                    alert("🎉 Discordロールが付与されました！");
+                } else {
+                    alert("❌ Discordロールの付与に失敗しました！");
+                }
             }
+        } else {
+            document.getElementById("result").textContent = `❌ 該当なし（NFT ID ${tokenId} 未保有）`;
+            console.log(`❌ ウォレットはNFT（ID:${tokenId}）を持っていません`);
         }
+
+    } catch (error) {
+        console.error("❌ ERC-1155 NFT 保有確認エラー:", error);
+        alert("NFT保有チェックに失敗しました。");
+    }
+}
 
 
         // Discordのロールを付与
