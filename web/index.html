@@ -3,23 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ウォレット認証</title>
+    <title>Role Claim</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f5f7;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn.discord {
+            background-color: #5865F2;
+            color: white;
+        }
+        .btn.wallet {
+            background-color: #F3F4F6;
+            color: #333;
+            border: 1px solid #d1d5db;
+        }
+        .btn.wallet.active {
+            background-color: #4F46E5;
+            color: white;
+        }
+        .btn.check {
+            background-color: #10B981;
+            color: white;
+        }
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .result {
+            font-size: 16px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h2>ウォレット認証</h2>
-        <button id="discordLoginButton">Discordでログイン</button>
+    <div class="container">
+        <h2 class="title">Role Claim</h2>
         
-        <!-- ウォレット選択ボタン -->
-        <p>使用するウォレットを選択してください:</p>
-        <button id="useMetamaskButton">Metamask</button>
-        <button id="useHaHaButton">HaHa Wallet</button>
+        <!-- Discordログイン -->
+        <button id="discordLoginButton" class="btn discord">🔗 Discordでログイン</button>
+        
+        <!-- ウォレット選択 -->
+        <p>Use wallet:</p>
+        <button id="useMetamaskButton" class="btn wallet">🦊 Metamask</button>
+        <button id="useHaHaButton" class="btn wallet">💙 HaHa Wallet</button>
         
         <!-- 選択後に表示されるウォレット認証ボタン -->
-        <button id="signButton" disabled>選択したウォレットで認証</button>
+        <button id="signButton" class="btn check disabled" disabled>Choose wallet connect</button>
         
-        <button id="checkERC1155" disabled>NFT check</button>
-        <p id="result"></p>
+        <button id="checkERC1155" class="btn check disabled" disabled>NFT check</button>
+        
+        <p id="result" class="result"></p>
+    </div>
 
 
     <script>
@@ -74,12 +138,12 @@
             let provider;
             if (selectedWallet === "haha" && window.haha) {
                 provider = new ethers.providers.Web3Provider(window.haha);
-                console.log("✅ HaHa Walletを使用します");
+                console.log("✅ Use HaHa Wallet");
             } else if (selectedWallet === "metamask" && window.ethereum) {
                 provider = new ethers.providers.Web3Provider(window.ethereum);
-                console.log("✅ Metamaskを使用します");
+                console.log("✅ Use Metamask");
             } else {
-                alert("ウォレットが選択されていません！");
+                alert("Wallet is not selected!");
                 return;
             }
         
@@ -89,11 +153,11 @@
                 const address = (await signer.getAddress()).toUpperCase();
         
                 console.log("✅ ウォレットアドレス:", address);
-                document.getElementById("result").textContent = `✅ 認証成功: ${address}`;
+                document.getElementById("result").textContent = `✅ Authentication successful: ${address}`;
                 document.getElementById("checkERC1155").disabled = false;
             } catch (error) {
                 console.error("❌ 認証エラー:", error);
-                alert("認証に失敗しました。");
+                alert("Authentication failed.");
             }
         }
 
@@ -107,7 +171,7 @@
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 console.log("✅ Metamask を使用してNFTを確認します");
             } else {
-                alert("ウォレットが選択されていません！");
+                alert("Wallet not selected!");
                 return;
             }
 
@@ -129,26 +193,26 @@
         console.log(`🎨 ERC-1155 NFT(${tokenId}) 保有数: ${balance.toString()}`);
 
         if (balance.gt(0)) {
-            document.getElementById("result").textContent = `✅ 該当（NFT ID ${tokenId} 保有）`;
+            document.getElementById("result").textContent = `✅ Relevant（NFT ID ${tokenId} 保有）`;
             console.log(`✅ ウォレットはNFT（ID:${tokenId}）を保有しています！`);
             
             // ✅ NFTを保有していて、Discord認証済みならロール付与
             if (discordUserId) {
                 const success = await assignDiscordRole(discordUserId);
                 if (success) {
-                    alert("🎉 Discordロールが付与されました！");
+                    alert("🎉 Discord role has been assigned!");
                 } else {
-                    alert("❌ Discordロールの付与に失敗しました！");
+                    alert("❌ Failed to assign Discord role!");
                 }
             }
         } else {
-            document.getElementById("result").textContent = `❌ 該当なし（NFT ID ${tokenId} 未保有）`;
+            document.getElementById("result").textContent = `❌ Fail（NFT ID ${tokenId} 未保有）`;
             console.log(`❌ ウォレットはNFT（ID:${tokenId}）を持っていません`);
         }
 
     } catch (error) {
         console.error("❌ ERC-1155 NFT 保有確認エラー:", error);
-        alert("NFT保有チェックに失敗しました。");
+        alert("error");
     }
 }
 
