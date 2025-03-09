@@ -200,6 +200,11 @@
                 const checkButton = document.getElementById("checkERC1155");
                 checkButton.disabled = false;
                 checkButton.classList.remove("disabled");
+
+                // 🚀 Disconnect ボタンを有効化
+                const disconnectButton = document.getElementById("disconnectWalletButton");
+                disconnectButton.disabled = false;
+                disconnectButton.classList.remove("disabled");
             } catch (error) {
                 console.error("❌ 認証エラー:", error);
                 alert("Authentication failed.");
