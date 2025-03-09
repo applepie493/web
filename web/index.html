@@ -115,39 +115,55 @@
         }
 
 
-        // URLからアクセストークンを取得し、Discordのユーザー情報を取得
+        // Discordのユーザー情報を取得し、✅をつける
         async function getDiscordUserInfo() {
             const hash = window.location.hash;
             if (!hash.includes("access_token")) return;
-
+        
             const params = new URLSearchParams(hash.replace("#", ""));
             const accessToken = params.get("access_token");
-
             if (!accessToken) return;
-
+        
             try {
                 const response = await fetch("https://discord.com/api/users/@me", {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 });
                 const data = await response.json();
                 discordUserId = data.id;
-                document.getElementById("signButton").disabled = false; // ウォレット認証ボタンを有効化
+        
+                // ✅ Discordログイン成功 → ボタンのテキストを変更
+                const discordButton = document.getElementById("discordLoginButton");
+                discordButton.innerHTML = "✅ Discord認証済み";
+                discordButton.disabled = true; // もう押せなくする
+        
                 console.log("✅ Discord ユーザーID:", discordUserId);
             } catch (error) {
                 console.error("❌ Discord ユーザー情報取得エラー:", error);
             }
         }
 
-        // ウォレット選択処理
+        // ウォレット選択処理（✅をつける）
         function selectWallet(walletType) {
             selectedWallet = walletType;
             console.log(`✅ 選択されたウォレット: ${selectedWallet}`);
+        
+            // 選択したボタンに ✅ をつける
+            document.getElementById("useMetamaskButton").innerHTML = "🦊 Metamask";
+            document.getElementById("useHaHaButton").innerHTML = "💙 HaHa Wallet";
+        
+            if (walletType === "metamask") {
+                document.getElementById("useMetamaskButton").innerHTML = "✅ 🦊 Metamask";
+            } else if (walletType === "haha") {
+                document.getElementById("useHaHaButton").innerHTML = "✅ 💙 HaHa Wallet";
+            }
+        
+            // 認証ボタンを有効化
             const signButton = document.getElementById("signButton");
             signButton.disabled = false;
             signButton.classList.remove("disabled");
         }
 
-        // ウォレット認証（選択したウォレットでサイン）
+        // ウォレット認証（✅をつける）
         async function signMessage() {
             console.log("📌 signMessage() が実行されました");
         
@@ -170,6 +186,13 @@
         
                 console.log("✅ ウォレットアドレス:", address);
                 document.getElementById("result").textContent = `✅ Authentication successful: ${address}`;
+        
+                // ✅ ウォレット接続成功 → ボタンに ✅ をつける
+                const signButton = document.getElementById("signButton");
+                signButton.innerHTML = "✅ ウォレット接続済み";
+                signButton.disabled = true; // もう押せなくする
+        
+                // NFTチェックボタンを有効化
                 const checkButton = document.getElementById("checkERC1155");
                 checkButton.disabled = false;
                 checkButton.classList.remove("disabled");
