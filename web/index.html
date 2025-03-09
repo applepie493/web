@@ -95,6 +95,10 @@
         <button id="signButton" class="btn check disabled" disabled>Choose wallet connect</button>
         
         <button id="checkERC1155" class="btn check disabled" disabled>NFT check</button>
+
+         <!-- Disconnect -->
+        <button id="disconnectWalletButton" class="btn check disabled" disabled>Disconnect Wallet</button>
+
         
         <p id="result" class="result"></p>
     </div>
@@ -288,6 +292,63 @@
             }
         }
 
+        // 🚀 ウォレット接続解除（Revoke）
+        async function disconnectWallet() {
+            console.log("🚫 Disconnect Wallet executed");
+        
+            try {
+                if (selectedWallet === "metamask" && window.ethereum) {
+                    // ✅ Metamask の権限削除
+                    await window.ethereum.request({
+                        method: "wallet_requestPermissions",
+                        params: [{ eth_accounts: {} }]
+                    });
+        
+                    console.log("✅ Metamask connection revoked.");
+                } else if (selectedWallet === "haha" && window.haha) {
+                    // ✅ HaHa Wallet の接続解除（APIがあれば実行）
+                    if (window.haha.disconnect) {
+                        await window.haha.disconnect();
+                        console.log("✅ HaHa Wallet disconnected.");
+                    } else {
+                        console.warn("🚨 HaHa Wallet does not support direct disconnection.");
+                    }
+                } else {
+                    alert("No wallet is connected.");
+                    return;
+                }
+        
+                // ✅ UI をリセット
+                selectedWallet = null;
+                document.getElementById("result").textContent = "";
+        
+                // ウォレットボタンのテキストを元に戻す
+                document.getElementById("useMetamaskButton").innerHTML = "🦊 Metamask";
+                document.getElementById("useHaHaButton").innerHTML = "💙 HaHa Wallet";
+        
+                // 「Wallet Connected」を「Choose wallet connect」に戻す
+                const signButton = document.getElementById("signButton");
+                signButton.innerHTML = "Choose wallet connect";
+                signButton.disabled = true;
+                signButton.classList.add("disabled");
+        
+                // NFTチェックボタンも無効化
+                const checkButton = document.getElementById("checkERC1155");
+                checkButton.disabled = true;
+                checkButton.classList.add("disabled");
+        
+                // Disconnect ボタンも無効化
+                const disconnectButton = document.getElementById("disconnectWalletButton");
+                disconnectButton.disabled = true;
+                disconnectButton.classList.add("disabled");
+        
+                alert("Wallet disconnected successfully!");
+            } catch (error) {
+                console.error("❌ Disconnect error:", error);
+                alert("Failed to disconnect the wallet.");
+            }
+        }
+
 
 
 
@@ -297,6 +358,9 @@
         document.getElementById("useHaHaButton").addEventListener("click", () => selectWallet("haha"));
         document.getElementById("signButton").addEventListener("click", signMessage);
         document.getElementById("checkERC1155").addEventListener("click", checkERC1155Balance);
+
+        // 🚀 Revoke ボタンにイベントリスナーを追加
+        document.getElementById("disconnectWalletButton").addEventListener("click", disconnectWallet);
         
         // ページ読み込み時にDiscordユーザー情報を取得
         window.onload = getDiscordUserInfo;
