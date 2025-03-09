@@ -133,7 +133,7 @@
         
                 // ✅ Discordログイン成功 → ボタンのテキストを変更
                 const discordButton = document.getElementById("discordLoginButton");
-                discordButton.innerHTML = "✅ Discord認証済み";
+                discordButton.innerHTML = "✅ Discord Verified";
                 discordButton.disabled = true; // もう押せなくする
         
                 console.log("✅ Discord ユーザーID:", discordUserId);
@@ -152,9 +152,9 @@
             document.getElementById("useHaHaButton").innerHTML = "💙 HaHa Wallet";
         
             if (walletType === "metamask") {
-                document.getElementById("useMetamaskButton").innerHTML = "✅ 🦊 Metamask";
+                document.getElementById("useMetamaskButton").innerHTML = "✅ 🦊 Metamask Click on <Choose wallet connect> below.";
             } else if (walletType === "haha") {
-                document.getElementById("useHaHaButton").innerHTML = "✅ 💙 HaHa Wallet";
+                document.getElementById("useHaHaButton").innerHTML = "✅ 💙 HaHa Wallet Click on <Choose wallet connect> below.";
             }
         
             // 認証ボタンを有効化
@@ -189,7 +189,7 @@
         
                 // ✅ ウォレット接続成功 → ボタンに ✅ をつける
                 const signButton = document.getElementById("signButton");
-                signButton.innerHTML = "✅ ウォレット接続済み";
+                signButton.innerHTML = "✅ Wallet Connected";
                 signButton.disabled = true; // もう押せなくする
         
                 // NFTチェックボタンを有効化
