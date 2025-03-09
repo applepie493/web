@@ -36,27 +36,41 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: opacity 0.3s ease-in-out;
         }
+        
         .btn.discord {
             background-color: #5865F2;
             color: white;
         }
+        
         .btn.wallet {
             background-color: #F3F4F6;
             color: #333;
             border: 1px solid #d1d5db;
         }
+        
         .btn.wallet.active {
             background-color: #4F46E5;
             color: white;
         }
+        
         .btn.check {
             background-color: #10B981;
             color: white;
         }
-        .disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        
+        /* 🚀 変更点：無効ボタンのデザイン */
+        .btn.disabled {
+            background-color: #D1D5DB; /* グレーアウト */
+            color: #9CA3AF; /* 薄い文字色 */
+            cursor: default; /* 禁止マークをやめる */
+            opacity: 0.7; /* 少し透明にして「まだ使えない」感を出す */
+        }
+        
+        /* 🚀 変更点：無効ボタンでもホバー時のエフェクトを適用 */
+        .btn.disabled:hover {
+            opacity: 1; /* ホバー時は普通に見えるように */
         }
         .result {
             font-size: 16px;
@@ -128,7 +142,9 @@
         function selectWallet(walletType) {
             selectedWallet = walletType;
             console.log(`✅ 選択されたウォレット: ${selectedWallet}`);
-            document.getElementById("signButton").disabled = false; // 認証ボタンを有効化
+            const signButton = document.getElementById("signButton");
+            signButton.disabled = false;
+            signButton.classList.remove("disabled");
         }
 
         // ウォレット認証（選択したウォレットでサイン）
@@ -154,7 +170,9 @@
         
                 console.log("✅ ウォレットアドレス:", address);
                 document.getElementById("result").textContent = `✅ Authentication successful: ${address}`;
-                document.getElementById("checkERC1155").disabled = false;
+                const checkButton = document.getElementById("checkERC1155");
+                checkButton.disabled = false;
+                checkButton.classList.remove("disabled");
             } catch (error) {
                 console.error("❌ 認証エラー:", error);
                 alert("Authentication failed.");
