@@ -297,7 +297,7 @@
             }
         }
 
-        // 🚀 ウォレット接続解除（Revoke）
+        // 🚀 Metamask / HaHa Wallet の接続解除（Revoke）
         async function revokeSignature() {
             console.log("🚫 Revoke Signature executed");
         
@@ -305,13 +305,17 @@
                 if (selectedWallet === "metamask" && window.ethereum) {
                     // ✅ Metamask の権限削除（eth_accounts の許可を取り消す）
                     await window.ethereum.request({
-                        method: "wallet_requestPermissions",
+                        method: "wallet_revokePermissions",
                         params: [{ eth_accounts: {} }]
                     });
         
-                    console.log("✅ Metamask signature revoked.");
+                    console.log("✅ Metamask wallet_revokePermissions executed.");
+        
+                    // ✅ ユーザーに Metamask の UI で手動で接続解除するように案内
+                    alert("Metamask の UI からも接続を解除する必要があります。\n1. Metamask を開く\n2. 接続済みのサイトの一覧を確認\n3. ここから手動で接続解除");
+        
                 } else if (selectedWallet === "haha" && window.haha) {
-                    // ✅ HaHa Wallet の接続解除（APIがあれば実行）
+                    // ✅ HaHa Wallet の接続解除
                     if (window.haha.disconnect) {
                         await window.haha.disconnect();
                         console.log("✅ HaHa Wallet signature revoked.");
@@ -353,9 +357,6 @@
                 alert("Failed to revoke the wallet signature.");
             }
         }
-
-
-
 
 
 
